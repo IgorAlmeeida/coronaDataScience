@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+analise/dataset
+
 # Distribution / packaging
 .Python
 build/
@@ -127,4 +129,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-analise/dataset

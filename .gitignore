@@ -6,7 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
-analise/dataset
+dataset.csv
+
 
 # Distribution / packaging
 .Python

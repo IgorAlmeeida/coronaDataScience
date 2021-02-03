@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', 'coronasiteufape.herokuapp.com']
+ALLOWED_HOSTS = ['localhost', 'coronasiteufape.herokuapp.com', '54.90.14.19', 'http://ec2-54-90-14-19.compute-1.amazonaws.com/']
 
 
 # Application definition

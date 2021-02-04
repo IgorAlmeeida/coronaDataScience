@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main %}
+
+<!-- Page Heading -->
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h1 class="h3 mb-0 text-gray-800">PAINEL COVID-19 BRASIL</h1>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">SELECIONE UMA DATA</h6>
+    </div>
+    <div class="card-body">
+        <div class="form-group row">
+            <div class="col-12">
+                <form action="{% url  'dataInfoDiaEstado' %}" method="POST">
+                    {% csrf_token %}
+                    <div>
+                        <input class="form-control" value='{{data}}' type="date" id="dataInput" name="data">
+                    </div>
+                    <div class="mt-3 float-right">
+                        <input type="submit" value="Pesquisar" class="btn btn-primary">
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">SITUAÇÃO DO BRASIL</h6>
+    </div>
+    <div class="card-body">
+        <!-- Content Row -->
+        <div class="row mt-6">
+            <!-- Earnings (Monthly) Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    CASOS CONFIRMADOS</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="casosConfirmados">{% for element in infoBrasil %}{{element.casosAcumulado}}{% endfor %}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-user fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Earnings (Monthly) Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    NOVOS CASOS</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="novosCasos">{% for element in infoBrasil %}{{element.casosNovos}}{% endfor %}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-tag fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Earnings (Monthly) Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">ÓBITOS
+                                </div>
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col-auto">
+                                        <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" id="novosObitos">{% for element in infoBrasil %}{{element.obitosAcumulado}}{% endfor %}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Requests Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    NOVOS ÓBITOS</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="obitos">{% for element in infoBrasil %}{{element.obitosNovos}}{% endfor %}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">ESTADOS</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Sigla</th>
+                                <th>Casos Acumulados</th>
+                                <th>Óbitos Acumulados</th>
+                                <th>Percentual Percapita</th>
+                                <th>Casos do dia anterior</th>
+                                <th>Percentual de aumento de casos</th>
+                                <th>Percentual de aumento de óbitos</th>
+                                <th>Novos casos</th>
+                                <th>Novos óbitos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista_estado">
+                            {% for estado in  infoEstados %}
+                                <tr>
+                                    <td>{{estado.estado}}</td>
+                                    <td>{{estado.casosAcumulado}}</td>
+                                    <td>{{estado.obitosAcumulado}}</td>
+                                    <td>{{estado.percPopCasos}}</td>
+                                    <td>{{estado.casoAnterior}}</td>
+                                    <td>{{estado.percCaso}}</td>
+                                    <td>{{estado.percObito}}</td>
+                                    <td>{{estado.novosCasos}}</td>
+                                    <td>{{estado.novosObitos}}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">RANKING ESTADOS</h6>
+    </div>
+    <div class="card-body">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">TOTAL DE CASOS</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Posição</th>
+                                <th>Sigla</th>
+                                <th>Casos Acumulados</th>
+                        </thead>
+                        <tbody id="lista_estado_casos">
+                            {% for estado in rakingCasos %}
+                                <tr>
+                                    <td>{{estado.posicao}}</td>
+                                    <td>{{estado.estado}}</td>
+                                    <td>{{estado.casosAcumulado}}</td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">TOTAL DE ÓBITOS</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Posição</th>
+                                <th>Sigla</th>
+                                <th>Óbitos Acumulados</th>
+                        </thead>
+                        <tbody id="lista_estado_casos">
+                            {% for estado in rakingObitos %}
+                                <tr>
+                                    <td>{{estado.posicao}}</td>
+                                    <td>{{estado.estado}}</td>
+                                    <td>{{estado.obitosAcumulado}}</td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">RANKING ESTADOS RELAÇÃO</h6>
+    </div>
+    <div class="card-body">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">CASOS</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Posição</th>
+                                <th>Sigla</th>
+                                <th>Casos Acumulados</th>
+                                <th>Relação</th>
+                        </thead>
+                        <tbody id="lista_estado_casos">
+                            {% for estado in rakingCorrCasos %}
+                                <tr>
+                                    <td>{{estado.posicao}}</td>
+                                    <td>{{estado.estado}}</td>
+                                    <td>{{estado.casosAcumulado}}</td>
+                                    <td>{{estado.corrCasos}}</td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">ÓBITOS</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Posição</th>
+                                <th>Sigla</th>
+                                <th>Óbitos Acumulados</th>
+                                <th>Relação</th>
+                        </thead>
+                        <tbody id="lista_estado_casos">
+                            {% for estado in rakingCorrObitos %}
+                                <tr>
+                                    <td>{{estado.posicao}}</td>
+                                    <td>{{estado.estado}}</td>
+                                    <td>{{estado.obitosAcumulado}}</td>
+                                    <td>{{estado.corrObitos}}</td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Análises</h6>
+    </div>
+    <div class="card-body">
+        <p>A partir do dia inserido, é possível ve a quantidade de casos e de óbitos nos estados,
+        també é possivel notar que a quantidade de casos está relacionada ao númedo de habitantes do estado.
+        É possível analisar, também, que quanto maior o número de casos maior é o número de óbitos.</p>
+    </div>
+</div>
+
+{% endblock main %}
+
+{% block js %}
+{% endblock js %}

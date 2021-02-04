@@ -3,11 +3,16 @@ from django.http import HttpResponse
 from datetime import datetime, timedelta
 import pandas as pd
 import os
+import numpy as np
 
 def home(request):
     return render(request, 'analise/index.html')
 
 def infoDiaEstado(request):
+
+    if(not request.POST.get('data')):
+        return redirect('/')
+
     dataPesquisa = request.POST.get('data')
     
     dataObject = datetime.strptime(dataPesquisa, '%Y-%m-%d').date()
@@ -20,21 +25,41 @@ def infoDiaEstado(request):
     situacaoFinal = situacaoDataEstado
     situacaoFinal['percPopCasos'] = (situacaoDataEstado['casosAcumulado'] / situacaoDataEstado['populacaoTCU2019']) * 100
     situacaoFinal['obitoAnterior'] = situacaoEstadoOntem['obitosAcumulado']
-    situacaoFinal['percCaso'] = (situacaoDataEstado['casosAcumulado'] - situacaoEstadoOntem['casosAcumulado'])/situacaoDataEstado['casosAcumulado']
-    situacaoFinal['percObito'] = (situacaoDataEstado['obitosAcumulado'] - situacaoEstadoOntem['obitosAcumulado'])/situacaoDataEstado['obitosAcumulado']
+    situacaoFinal['percCaso'] = ((situacaoDataEstado['casosAcumulado'] - situacaoEstadoOntem['casosAcumulado'])/situacaoDataEstado['casosAcumulado']) * 100
+    situacaoFinal['percObito'] = ((situacaoDataEstado['obitosAcumulado'] - situacaoEstadoOntem['obitosAcumulado'])/situacaoDataEstado['obitosAcumulado']) * 100
     situacaoFinal['novosObitos'] = (situacaoDataEstado['obitosAcumulado'] - situacaoEstadoOntem['obitosAcumulado'])
     situacaoFinal['novosCasos'] = (situacaoDataEstado['casosAcumulado'] - situacaoEstadoOntem['casosAcumulado'])
     situacaoFinal['casoAnterior'] = situacaoEstadoOntem['casosAcumulado']
 
-    json = situacaoFinal.to_json(orient='records')
-    json = [json]
+    del situacaoDataEstado
+    del situacaoEstadoOntem
 
-    return HttpResponse(json)
+    situacaoBrasil = infoDiaBrasil(dataPesquisa)
+
+    rakinkgCasos = situacaoFinal.sort_values(by=['casosAcumulado'],  ascending=False)
+    rakingObitos = situacaoFinal.sort_values(by=['obitosAcumulado'],  ascending=False)
+
+    rakinkgCasos['posicao'] = np.arange(1,1+len(rakinkgCasos.casosAcumulado))
+    rakingObitos['posicao'] = np.arange(1,1+len(rakingObitos.casosAcumulado))
+
+    rakinkgCasos['corrCasos'] =  rakinkgCasos['casosAcumulado'].corr(rakinkgCasos['populacaoTCU2019'])
+    rakingObitos['corrObitos'] = rakingObitos['obitosAcumulado'].corr(rakingObitos['populacaoTCU2019'])
+
+
+    return render(request, 'analise/index2.html',{
+        'infoEstados': situacaoFinal.to_dict('records'),
+        'infoBrasil': situacaoBrasil.to_dict('records'),
+        'rakingCasos': rakinkgCasos.to_dict('records'),
+        'rakingObitos': rakingObitos.to_dict('records'), 
+        'rakingCorrCasos' : rakinkgCasos.to_dict('records'),
+        'rakingCorrObitos' : rakingObitos.to_dict('records'),
+        'data' : dataPesquisa
+    })
+
+        
 
 
 # Create your views here.
-
-
 
 def infoDataEstado(data):
     module_dir = os.path.dirname(__file__)
@@ -46,6 +71,8 @@ def infoDataEstado(data):
 
     dfFiltroDataInset = df[(df['data'] == data)]
 
+    del df
+
     dfpopulacao = dfFiltroDataInset.drop_duplicates(['estado'])
 
     dfpopulacao = dfpopulacao[['estado', 'populacaoTCU2019']]
@@ -54,11 +81,14 @@ def infoDataEstado(data):
 
     dfFinal = pd.merge(dfFiltroDataInset, dfpopulacao, left_on='estado', right_on='estado')
 
+    del dfFiltroDataInset
+
+    del dfpopulacao
+
     return dfFinal
 
 
-def infoDiaBrasil(request):
-    dataPesquisa = request.POST.get('data')
+def infoDiaBrasil(dataPesquisa):
     
     dataObject = datetime.strptime(dataPesquisa, '%Y-%m-%d').date()
 
@@ -69,7 +99,12 @@ def infoDiaBrasil(request):
     df['data'] = pd.to_datetime(df['data'])
     dfFiltroDataInsetBrasil = df[(df['data'] == dataPesquisa) & (df['regiao'] == 'Brasil')]
 
-    json = dfFiltroDataInsetBrasil.to_json(orient='records')
+    del df
 
-    return HttpResponse(json)
+    return dfFiltroDataInsetBrasil
     
+
+
+
+
+

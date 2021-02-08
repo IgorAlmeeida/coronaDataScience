@@ -23,7 +23,7 @@ def infoDiaEstado(request):
     situacaoEstadoOntem = infoDataEstado(ontem)
 
     situacaoFinal = situacaoDataEstado
-    situacaoFinal['percPopCasos'] = (situacaoDataEstado['casosAcumulado'] / situacaoDataEstado['populacaoTCU2019']) * 100
+    situacaoFinal['percPopCasos'] = (situacaoDataEstado['casosAcumulado'] / situacaoDataEstado['populacaoTCU2019'])* 100
     situacaoFinal['obitoAnterior'] = situacaoEstadoOntem['obitosAcumulado']
     situacaoFinal['percCaso'] = ((situacaoDataEstado['casosAcumulado'] - situacaoEstadoOntem['casosAcumulado'])/situacaoDataEstado['casosAcumulado']) * 100
     situacaoFinal['percObito'] = ((situacaoDataEstado['obitosAcumulado'] - situacaoEstadoOntem['obitosAcumulado'])/situacaoDataEstado['obitosAcumulado']) * 100
@@ -39,7 +39,7 @@ def infoDiaEstado(request):
     rakinkgCasos['posicao'] = np.arange(1,1+len(rakinkgCasos.casosAcumulado))
     rakingObitos['posicao'] = np.arange(1,1+len(rakingObitos.casosAcumulado))
 
-    rakinkgCasos['corrCasos'] = ((rakinkgCasos['casosAcumulado']/  situacaoDataEstado['populacaoTCU2019']))
+    rakinkgCasos['corrCasos'] = ((rakinkgCasos['casosAcumulado']/  rakinkgCasos['populacaoTCU2019']))
     rakingObitos['corrObitos'] = ((rakingObitos['obitosAcumulado'] / rakingObitos['populacaoTCU2019']))
 
     rakinkgCasosRelacao = rakinkgCasos.sort_values(by=['corrCasos'],  ascending=False)
@@ -73,22 +73,16 @@ def infoDataEstado(data):
     df['data'] = pd.to_datetime(df['data'])
 
     dfFiltroDataInset = df[(df['data'] == data)]
+    
+    dfFiltroDataInset = dfFiltroDataInset.drop_duplicates(['municipio'])
 
     del df
 
-    dfpopulacao = dfFiltroDataInset.drop_duplicates(['estado'])
+    dfFiltroDataInset = dfFiltroDataInset.groupby(['estado'],  as_index=False)[['casosAcumulado', 'obitosAcumulado','populacaoTCU2019' ]].apply(sum)
 
-    dfpopulacao = dfpopulacao[['estado', 'populacaoTCU2019']]
+    print(dfFiltroDataInset)
 
-    dfFiltroDataInset = dfFiltroDataInset.groupby(['estado'],  as_index=False)[['casosAcumulado', 'obitosAcumulado']].apply(sum)
-
-    dfFinal = pd.merge(dfFiltroDataInset, dfpopulacao, left_on='estado', right_on='estado')
-
-    del dfFiltroDataInset
-
-    del dfpopulacao
-
-    return dfFinal
+    return dfFiltroDataInset
 
 
 def infoDiaBrasil(dataPesquisa):

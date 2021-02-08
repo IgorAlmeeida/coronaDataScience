@@ -31,9 +31,6 @@ def infoDiaEstado(request):
     situacaoFinal['novosCasos'] = (situacaoDataEstado['casosAcumulado'] - situacaoEstadoOntem['casosAcumulado'])
     situacaoFinal['casoAnterior'] = situacaoEstadoOntem['casosAcumulado']
 
-    del situacaoDataEstado
-    del situacaoEstadoOntem
-
     situacaoBrasil = infoDiaBrasil(dataPesquisa)
 
     rakinkgCasos = situacaoFinal.sort_values(by=['casosAcumulado'],  ascending=False)
@@ -42,17 +39,23 @@ def infoDiaEstado(request):
     rakinkgCasos['posicao'] = np.arange(1,1+len(rakinkgCasos.casosAcumulado))
     rakingObitos['posicao'] = np.arange(1,1+len(rakingObitos.casosAcumulado))
 
-    rakinkgCasos['corrCasos'] =  rakinkgCasos['casosAcumulado'].corr(rakinkgCasos['populacaoTCU2019'])
-    rakingObitos['corrObitos'] = rakingObitos['obitosAcumulado'].corr(rakingObitos['populacaoTCU2019'])
+    rakinkgCasos['corrCasos'] = ((rakinkgCasos['casosAcumulado']/  situacaoDataEstado['populacaoTCU2019']))
+    rakingObitos['corrObitos'] = ((rakingObitos['obitosAcumulado'] / rakingObitos['populacaoTCU2019']))
 
+    rakinkgCasosRelacao = rakinkgCasos.sort_values(by=['corrCasos'],  ascending=False)
+    rakingObitosRelacao = rakingObitos.sort_values(by=['corrObitos'],  ascending=False)
 
+    rakinkgCasosRelacao['posicao'] = np.arange(1,1+len(rakinkgCasos.casosAcumulado))
+    rakingObitosRelacao['posicao'] = np.arange(1,1+len(rakinkgCasos.casosAcumulado))
+
+    
     return render(request, 'analise/index2.html',{
         'infoEstados': situacaoFinal.to_dict('records'),
         'infoBrasil': situacaoBrasil.to_dict('records'),
         'rakingCasos': rakinkgCasos.to_dict('records'),
         'rakingObitos': rakingObitos.to_dict('records'), 
-        'rakingCorrCasos' : rakinkgCasos.to_dict('records'),
-        'rakingCorrObitos' : rakingObitos.to_dict('records'),
+        'rakingCorrCasos' : rakinkgCasosRelacao.to_dict('records'),
+        'rakingCorrObitos' : rakingObitosRelacao.to_dict('records'),
         'data' : dataPesquisa
     })
 

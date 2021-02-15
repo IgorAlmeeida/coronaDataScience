@@ -74,7 +74,7 @@ def infoDataEstado(data):
 
     dfFiltroDataInset = df[(df['data'] == data)]
     
-    dfFiltroDataInset = dfFiltroDataInset.drop_duplicates(['municipio'])
+    dfFiltroDataInset = dfFiltroDataInset.dropna(subset=["municipio"])
 
     del df
 
